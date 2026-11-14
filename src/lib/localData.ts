@@ -37,7 +37,7 @@ export async function getHelpCenterConfig(_projectId?: string) {
 
 /** Returns all published FAQs */
 export async function getFaqs(_projectId?: string) {
-  return rawFaqs.filter((f) => f.is_published);
+  return (rawFaqs as any[]).filter((f) => f.is_published);
 }
 
 /** Returns all folders */
