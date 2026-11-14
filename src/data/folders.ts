@@ -12,29 +12,20 @@
 export const folders = [
   {
     id: 'docs',
-    name: 'Docs',
+    name: '使用手冊',
     slug: 'docs',
     icon: 'hugeicons:book-open-01',
-    description: 'Guides, configuration, and component documentation.',
+    description: '使用手冊、設定和元件文件。',
     is_default: true,
     display_order: 1,
-  },
-  {
-    id: 'api-reference',
-    name: 'API Reference',
-    slug: 'api-reference',
-    icon: 'hugeicons:code',
-    description: 'Full API documentation with request and response examples.',
-    is_default: false,
-    display_order: 2,
   },
   {
     id: 'blog',
     name: 'Blog',
     slug: 'blog',
     icon: 'hugeicons:quill-write-01',
-    description: 'Updates, tutorials, and product news.',
+    description: 'Oupos的更新、公告、以及其他文章。',
     is_default: false,
-    display_order: 3,
+    display_order: 2,
   },
 ];
