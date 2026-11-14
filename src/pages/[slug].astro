@@ -63,7 +63,7 @@ const getCategoryName = (categoryId: string | null) => {
 const formattedDate = article?.created_at
   ? new Date(article.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
   : '';
-const articleExcerpt = article?.excerpt || article?.title || '';
+const articleExcerpt = (article as any)?.excerpt || article?.title || '';
 const categoryName = article ? getCategoryName(article.category_id) : '';
 const articleUrl = article ? Astro.url.href : '';
 
