@@ -34,16 +34,23 @@ export const h3 = (text: string) => ({
   content: t(text), children: [],
 });
 
-export const p = (text: string) => ({
-  id: uid(), type: 'paragraph',
-  props: { textColor: 'default', backgroundColor: 'default', textAlignment: 'left' },
-  content: [{ type: 'text', text, styles: {} }], children: [],
+export const p = (content: string | any[]) => ({
+  id: uid(),
+  type: 'paragraph',
+  props: {
+    textColor: 'default',
+    backgroundColor: 'default',
+    textAlignment: 'left',
+  },
+  content: typeof content === 'string' ? t(content) : content,
+  children: [],
 });
 
-export const bullet = (text: string) => ({
+export const bullet = (text: string | any[]) => ({
   id: uid(), type: 'bulletListItem',
   props: { textColor: 'default', backgroundColor: 'default', textAlignment: 'left' },
-  content: [{ type: 'text', text, styles: {} }], children: [],
+  content: typeof text === 'string' ? t(text) : text,
+  children: [],
 });
 
 export const numbered = (text: string) => ({
@@ -79,10 +86,20 @@ export const codeBlock = (code: string, language = 'typescript') => ({
 // ─── Custom blocks ────────────────────────────────────────────────────────────
 
 /** calloutType: 'info' | 'warning' | 'success' | 'error' | 'tips' | 'check' | 'note' */
-export const callout = (calloutType: string, text: string) => ({
-  id: uid(), type: 'callout',
-  props: { calloutType, textColor: 'default', backgroundColor: 'default', textAlignment: 'left' },
-  content: [{ type: 'text', text, styles: {} }], children: [],
+export const callout = (
+  calloutType: string,
+  content: string | any[]
+) => ({
+  id: uid(),
+  type: 'callout',
+  props: {
+    calloutType,
+    textColor: 'default',
+    backgroundColor: 'default',
+    textAlignment: 'left',
+  },
+  content: typeof content === 'string' ? t(content) : content,
+  children: [],
 });
 
 export const accordion = (accordionTitle: string, accordionBody: string) => ({
@@ -164,4 +181,11 @@ export const responseField = (fieldName: string, fieldType: string, required: bo
   id: uid(), type: 'responseField',
   props: { fieldName, fieldType, required, textColor: 'default', backgroundColor: 'default', textAlignment: 'left' },
   content: [{ type: 'text', text: description, styles: {} }], children: [],
+});
+
+// Inline hyperlink
+export const inlineLink = (text: string, href: string) => ({
+  type: 'link',
+  href,
+  content: t(text),
 });

@@ -14,14 +14,14 @@ export { folders } from './folders';
 // ─── Categories ──────────────────────────────────────────────────────────────
 import { gettingStartedCategory } from './categories/getting-started';
 import { guidesCategory } from './categories/guides';
-import { troubleshootingCategory } from './categories/troubleshooting';
 import { blogCategory } from './categories/blog';
+import { PrivacyAndTermsCategory } from './categories/privacyandterms';
 
 export const categories = [
   gettingStartedCategory,
   guidesCategory,
-  troubleshootingCategory,
   blogCategory,
+  PrivacyAndTermsCategory,
 ];
 
 // ─── Articles: Getting Started ────────────────────────────────────────────────
@@ -31,40 +31,27 @@ import { quickStartArticle } from './articles/getting-started/quick-start';
 
 
 // ─── Articles: Guides ─────────────────────────────────────────────────────────
-import { configurationArticle } from './articles/guides/configuration';
-import { themingArticle } from './articles/guides/theming';
-import { addingContentArticle } from './articles/guides/adding-content';
+import { MenuAndInventoryArticle } from './articles/guides/MenuAndInventory';
+import { deleteAccountArticle } from './articles/guides/deleteAccount';
 
-
-// ─── Articles: Troubleshooting ────────────────────────────────────────────────
-import { commonErrorsArticle } from './articles/troubleshooting/common-errors';
-import { performanceArticle } from './articles/troubleshooting/performance';
+// ─── Articles: Privacy and Terms ────────────────────────────────────────────────
+import { privacyArticle } from './articles/privacyandterms/privacy';
+import { termsArticle } from './articles/privacyandterms/terms';
 
 // ─── Articles: Blog ───────────────────────────────────────────────────────────
-import { introducingHelioArticle } from './articles/blog/introducing-helio';
 import { buildingDocsWithBlocksArticle } from './articles/blog/building-docs-with-blocks';
-import { seoForDocsArticle } from './articles/blog/seo-for-docs';
-import { deployingToCloudflareArticle } from './articles/blog/deploying-to-cloudflare';
-import { darkModeThemingArticle } from './articles/blog/dark-mode-theming';
-import { writingGreatDocsArticle } from './articles/blog/writing-great-docs';
 
 export const articles = [
   // Getting Started
   welcomeArticle,
   installationArticle,
   quickStartArticle,
+  // Privacy and Terms
+  privacyArticle,
+  termsArticle,
   // Guides
-  configurationArticle,
-  themingArticle,
-  addingContentArticle,
-  // Troubleshooting
-  commonErrorsArticle,
-  performanceArticle,
+  MenuAndInventoryArticle,
+  deleteAccountArticle,
   // Blog
-  introducingHelioArticle,
   buildingDocsWithBlocksArticle,
-  seoForDocsArticle,
-  deployingToCloudflareArticle,
-  darkModeThemingArticle,
-  writingGreatDocsArticle,
 ];
