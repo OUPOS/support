@@ -19,13 +19,22 @@ export const folders = [
     is_default: true,
     display_order: 1,
   },
-  {
-    id: 'blog',
-    name: 'Blog',
-    slug: 'blog',
-    icon: 'hugeicons:quill-write-01',
-    description: 'Oupos的更新、公告、以及其他文章。',
-    is_default: false,
-    display_order: 2,
-  },
+  // {
+  //   id: 'blog',
+  //   name: 'Blog',
+  //   slug: 'blog',
+  //   icon: 'hugeicons:quill-write-01',
+  //   description: 'Oupos的更新、公告、以及其他文章。',
+  //   is_default: false,
+  //   display_order: 2,
+  // },
+  // {
+  //   id: 'cloud',
+  //   name: 'Oupos Cloud',
+  //   slug: 'cloud',
+  //   icon:'hugeicons:cloud',
+  //   description: 'Oupos Cloud 使用OUPOS的伺服器為您的Pos提供支援。',
+  //   is_default: false,
+  //   display_order: 3
+  // }
 ];

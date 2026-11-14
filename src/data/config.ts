@@ -31,7 +31,7 @@ export const helpCenterConfig = {
   ],
   show_primary_button: true,
   primary_button_label: '免費下載',
-  primary_button_url: 'https://oupos.app/download',
+  primary_button_url: '/article/installation',
 
   // SEO
   meta_title: '技術支援中心｜OUPOS',
