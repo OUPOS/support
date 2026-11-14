@@ -1,7 +1,16 @@
 {
   "name": "support",
+  "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2026-11-14",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
+    "binding": "ASSETS",
     "directory": "./dist"
-  }
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "4444fcef28074a519aa4935dc3f7e05a"
+    }
+  ]
 }
