@@ -1,0 +1,1 @@
+import{default as a}from"./ArticlePageWrapper.kcYhBpc1.js";import"./BaseLayoutWrapper.C07qQosA.js";import"./index.DgnZ0SxH.js";import"./index.BZTnj_Ni.js";import"./index.XvGU6xFL.js";import"./client.aNb2rmG1.js";import"./SearchModal.CC0XSGTY.js";export{a as default};
