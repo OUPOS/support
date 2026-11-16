@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import '../styles/globals.css';
+import { getSiteUrl } from '../lib/siteUrl';
 
 interface Props {
   title: string;
@@ -16,9 +17,27 @@ interface Props {
     section?: string;
   };
   folders?: any[];
+  /** Canonical path (e.g. /article/foo). Defaults to the current path. Use it to collapse duplicate URLs. */
+  canonicalPath?: string;
+  /** Breadcrumb trail for BreadcrumbList structured data (paths are site-relative). */
+  breadcrumbs?: { name: string; path: string }[];
+  /** Exclude this page from search engines. */
+  noindex?: boolean;
 }
 
-const { title, description, config, projectId, ogImage, ogType = 'website', article, folders = [] } = Astro.props;
+const {
+  title,
+  description,
+  config,
+  projectId,
+  ogImage,
+  ogType = 'website',
+  article,
+  folders = [],
+  canonicalPath,
+  breadcrumbs,
+  noindex = false,
+} = Astro.props;
 
 // Extract theme variables
 const primaryColor = config.primary_color || '#3b82f6';
@@ -27,35 +46,35 @@ const headingFont = config.heading_font || 'system-ui, sans-serif';
 const bodyFont = config.body_font || 'system-ui, sans-serif';
 const isDark = config.theme_mode === 'dark';
 
-// Get the original domain from headers (for proxied custom domains)
-const forwardedHost = Astro.request.headers.get('X-Forwarded-Host') || Astro.request.headers.get('X-Original-Host');
-const actualOrigin = forwardedHost ? `${Astro.url.protocol}//${forwardedHost}` : Astro.url.origin;
-
-// If the user has configured a sub-path deployment (e.g. yourdomain.com/docs),
-// reconstruct the canonical URL using sub_path_domain + sub_path + current path.
-// The worker strips the sub-path before proxying, so Astro.url.pathname is already
-// the stripped path (e.g. /getting-started, not /docs/getting-started).
-// Also read X-Gately-Sub-Path header sent by the worker as a reliable fallback.
+// Public site URL (config.site_url → sub-path domain → proxy host → request origin)
 const subPathDomain = config.sub_path_domain || null;
 const subPath = config.sub_path || '';
-const publicOrigin = subPathDomain
-  ? `${Astro.url.protocol}//${subPathDomain}`
-  : actualOrigin;
-const publicPathPrefix = subPathDomain && subPath ? subPath : '';
-const actualUrl = `${publicOrigin}${publicPathPrefix}${Astro.url.pathname}${Astro.url.search}`;
+const siteUrl = getSiteUrl(Astro.request, Astro.url, config);
+const absUrl = (u?: string | null) =>
+  !u ? undefined : /^https?:\/\//i.test(u) ? u : `${siteUrl}${u.startsWith('/') ? '' : '/'}${u}`;
 
-// SEO metadata
-const metaTitle = config.meta_title || title;
+// SEO metadata — pages pass a fully composed title (e.g. "文章標題｜OUPOS")
+const siteName = config.portal_name || 'Help Center';
+const metaTitle = title || config.meta_title || siteName;
 const metaDescription = description || config.meta_description || config.welcome_subtitle;
-const ogImageUrl = ogImage || config.og_image_url || config.logo_url;
-const ogLogoUrl = config.logo_url;
+const ogImageUrl = absUrl(ogImage || config.og_image_url || config.logo_url);
+// Social platforms don't render SVG previews; only advertise a large card for raster images
+const ogImageIsRaster = !!ogImageUrl && !/\.svg(\?|$)/i.test(ogImageUrl);
 const faviconUrl = config.favicon_url;
-const canonicalUrl = actualUrl;
-const baseUrl = subPathDomain ? `${publicOrigin}${publicPathPrefix}` : (config.subdomain_url || actualOrigin);
+const faviconType = faviconUrl?.endsWith('.svg') ? 'image/svg+xml' : faviconUrl?.endsWith('.ico') ? 'image/x-icon' : 'image/png';
+// Canonical never includes query strings (?ref=, utm_*, …) to avoid duplicate URLs
+const canonicalUrl = `${siteUrl}${canonicalPath ?? Astro.url.pathname}`;
+const baseUrl = siteUrl;
+const htmlLang = config.locale || 'zh-Hant-TW';
+const ogLocale = htmlLang.startsWith('zh') ? 'zh_TW' : htmlLang.replace('-', '_');
+const schemaLang = htmlLang.startsWith('zh') ? 'zh-TW' : htmlLang;
+const robotsContent = noindex
+  ? 'noindex, follow'
+  : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 ---
 
 <!DOCTYPE html>
-<html lang="en" class={isDark ? 'dark' : ''}>
+<html lang={htmlLang} class={isDark ? 'dark' : ''}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -224,181 +243,120 @@ const baseUrl = subPathDomain ? `${publicOrigin}${publicPathPrefix}` : (config.s
     
     {/* Primary Meta Tags */}
     <title>{metaTitle}</title>
-    <meta name="title" content={metaTitle} />
     {metaDescription && <meta name="description" content={metaDescription} />}
     <link rel="canonical" href={canonicalUrl} />
-    
+    <meta name="robots" content={robotsContent} />
+
     {/* Favicon */}
-    {faviconUrl && <link rel="icon" type="image/png" href={faviconUrl} />}
-    
-    {/* Open Graph / Facebook */}
+    {faviconUrl && <link rel="icon" type={faviconType} href={faviconUrl} />}
+    {config.logo_url && <link rel="apple-touch-icon" href={config.logo_url} />}
+
+    {/* Open Graph */}
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={metaTitle} />
     {metaDescription && <meta property="og:description" content={metaDescription} />}
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
     {ogImageUrl && <meta property="og:image:alt" content={metaTitle} />}
-    {ogImageUrl && <meta property="og:image:width" content="1200" />}
-    {ogImageUrl && <meta property="og:image:height" content="630" />}
-    {ogLogoUrl && <meta property="og:logo" content={ogLogoUrl} />}
-    <meta property="og:site_name" content={config.portal_name || 'Helio'} />
-    
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={ogLocale} />
+
     {/* Article-specific Open Graph tags */}
     {article && (
       <>
         {article.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
         {article.modifiedTime && <meta property="article:modified_time" content={article.modifiedTime} />}
-        {article.author && <meta property="article:author" content={article.author} />}
         {article.section && <meta property="article:section" content={article.section} />}
       </>
     )}
-    
+
     {/* Twitter */}
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:card" content={ogImageIsRaster ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={metaTitle} />
     {metaDescription && <meta name="twitter:description" content={metaDescription} />}
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
-    
-    {/* Robots */}
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    
+
     {/* Geo-targeting */}
     {config.geo_region && <meta name="geo.region" content={config.geo_region} />}
     {config.geo_placename && <meta name="geo.placename" content={config.geo_placename} />}
     {config.geo_position && <meta name="geo.position" content={config.geo_position} />}
     {config.icbm && <meta name="ICBM" content={config.icbm} />}
-    
-    {/* Language and locale */}
-    <meta property="og:locale" content="en_US" />
-    <meta name="language" content="English" />
-    
-    {/* Additional SEO */}
-    <meta name="author" content={config.portal_name || 'Help Center'} />
-    <meta name="publisher" content={config.portal_name || 'Help Center'} />
-    <meta name="copyright" content={`© ${new Date().getFullYear()} ${config.portal_name || 'Help Center'}`} />
-    <meta name="revisit-after" content="7 days" />
-    <meta name="distribution" content="global" />
-    <meta name="rating" content="general" />
-    
-    {/* Mobile optimization */}
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content={config.portal_name || 'Help Center'} />
-    
-    {/* Theme color */}
+
+    {/* Mobile / PWA */}
+    <meta name="apple-mobile-web-app-title" content={siteName} />
     <meta name="theme-color" content={primaryColor} />
-    <meta name="msapplication-TileColor" content={primaryColor} />
-    
-    {/* DNS prefetch */}
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    
+
+    {/* Discovery */}
+    <link rel="sitemap" type="application/xml" href={`${siteUrl}/sitemap.xml`} />
+
     {/* Alternate languages (if configured) */}
     {config.alternate_languages && config.alternate_languages.map((lang: any) => (
       <link rel="alternate" hreflang={lang.code} href={`${baseUrl}${lang.path || '/'}`} />
     ))}
-    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
-    
-    {/* Structured Data - Organization/Website */}
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": ogType === 'article' ? 'Article' : 'WebSite',
-      "name": config.portal_name || 'Help Center',
-      "url": canonicalUrl,
-      ...(metaDescription && { "description": metaDescription }),
-      ...(config.logo_url && {
-        "logo": {
-          "@type": "ImageObject",
-          "url": config.logo_url
-        }
-      }),
-      ...(ogType === 'article' && article && {
-        "headline": metaTitle,
-        "datePublished": article.publishedTime,
-        "dateModified": article.modifiedTime || article.publishedTime,
-        "author": {
-          "@type": "Organization",
-          "name": config.portal_name || 'Help Center'
-        },
+
+    {/* Structured data: WebSite (home) or TechArticle (articles) */}
+    {ogType === 'article' && article ? (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": metaTitle.split('｜')[0].trim(),
+        ...(metaDescription && { "description": metaDescription }),
+        "url": canonicalUrl,
+        "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
+        ...(article.publishedTime && { "datePublished": article.publishedTime }),
+        ...((article.modifiedTime || article.publishedTime) && { "dateModified": article.modifiedTime || article.publishedTime }),
+        "author": { "@type": "Organization", "name": siteName, "url": baseUrl },
         "publisher": {
           "@type": "Organization",
-          "name": config.portal_name || 'Help Center',
-          ...(config.logo_url && {
-            "logo": {
-              "@type": "ImageObject",
-              "url": config.logo_url
-            }
-          })
+          "name": siteName,
+          ...(absUrl(config.logo_url) && { "logo": { "@type": "ImageObject", "url": absUrl(config.logo_url) } })
         },
-        ...(ogImageUrl && {
-          "image": {
-            "@type": "ImageObject",
-            "url": ogImageUrl,
-            "width": 1200,
-            "height": 630
-          }
-        }),
-        "mainEntityOfPage": {
-          "@type": "WebPage",
-          "@id": canonicalUrl
-        },
-        "inLanguage": "en-US",
+        ...(ogImageUrl && { "image": ogImageUrl }),
+        "inLanguage": schemaLang,
         "isAccessibleForFree": true,
         ...(article.section && { "articleSection": article.section })
-      })
-    })} />
-    
-    {/* Breadcrumb Schema for Articles */}
-    {ogType === 'article' && article && article.section && (
+      })} />
+    ) : (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": siteName,
+        "url": `${baseUrl}/`,
+        ...(metaDescription && { "description": metaDescription }),
+        "inLanguage": schemaLang,
+        "publisher": { "@type": "Organization", "name": siteName }
+      })} />
+    )}
+
+    {/* Breadcrumbs */}
+    {breadcrumbs && breadcrumbs.length > 0 && (
       <script type="application/ld+json" set:html={JSON.stringify({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": baseUrl
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": article.section,
-            "item": `${baseUrl}/category/${article.section.toLowerCase().replace(/\s+/g, '-')}`
-          },
-          {
-            "@type": "ListItem",
-            "position": 3,
-            "name": metaTitle,
-            "item": canonicalUrl
-          }
-        ]
+        "itemListElement": breadcrumbs.map((c, i) => ({
+          "@type": "ListItem",
+          "position": i + 1,
+          "name": c.name,
+          "item": `${siteUrl}${c.path}`
+        }))
       })} />
     )}
-    
-    {/* Organization Schema */}
+
+    {/* Organization */}
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": config.portal_name || 'Help Center',
+      "name": siteName,
       "url": baseUrl,
-      ...(config.logo_url && {
-        "logo": config.logo_url
-      }),
-      ...(metaDescription && {
-        "description": metaDescription
-      }),
+      ...(absUrl(config.logo_url) && { "logo": absUrl(config.logo_url) }),
+      ...(config.same_as?.length && { "sameAs": config.same_as }),
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer support",
         "url": baseUrl
       }
     })} />
-    
+
     {/* Inject theme CSS variables directly into HTML */}
     <style define:vars={{ primaryColor, secondaryColor, headingFont, bodyFont }}>
       :root {
@@ -491,6 +449,23 @@ const baseUrl = subPathDomain ? `${publicOrigin}${publicPathPrefix}` : (config.s
             }
           }
           
+          // Stale build: page HTML references a /_helio/ chunk removed by a newer
+          // deploy (island fails to hydrate). Reload once to fetch fresh HTML.
+          const text = args.map(a => (a && a.message) || String(a)).join(' ');
+          if (
+            /Error hydrating|Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(text)
+          ) {
+            try {
+              const key = 'stale-build-reload';
+              const last = Number(sessionStorage.getItem(key) || 0);
+              if (Date.now() - last > 30000) {
+                sessionStorage.setItem(key, String(Date.now()));
+                location.reload();
+                return;
+              }
+            } catch (_) { /* storage unavailable — fall through */ }
+          }
+
           // Pass through all other errors
           originalError.apply(console, args);
         };

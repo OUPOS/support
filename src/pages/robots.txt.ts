@@ -1,26 +1,18 @@
 import type { APIRoute } from 'astro';
+import { getHelpCenterConfig } from '../lib/localData';
+import { getSiteUrl } from '../lib/siteUrl';
 
 export const GET: APIRoute = async ({ request, url }) => {
-  const forwardedHost =
-    request.headers.get('X-Forwarded-Host') ||
-    request.headers.get('X-Original-Host');
-  const baseUrl = forwardedHost
-    ? `${url.protocol}//${forwardedHost}`
-    : url.origin;
+  const config = await getHelpCenterConfig();
+  const baseUrl = getSiteUrl(request, url, config);
 
-  const robots = `# Helio Help Center
-User-agent: *
+  // Note: /_helio/ (JS/CSS bundles) must stay crawlable — every page is rendered
+  // client-side, and Google can't render (or index) pages whose assets are blocked.
+  const robots = `User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /_helio/
 
-# Sitemap
-Sitemap: ${baseUrl}/sitemap.xml
-
-# Crawl-delay
-Crawl-delay: 1
-
-# Block scrapers
+# SEO tool scrapers
 User-agent: AhrefsBot
 Disallow: /
 
@@ -31,7 +23,10 @@ User-agent: MJ12bot
 Disallow: /
 
 User-agent: DotBot
-Disallow: /`;
+Disallow: /
+
+Sitemap: ${baseUrl}/sitemap.xml
+`;
 
   return new Response(robots, {
     status: 200,

@@ -1,0 +1,27 @@
+---
+/**
+ * Server-rendered article markup. Placed in the `fallback` slot of the
+ * client:only article island, so it is in the HTML response (crawlers,
+ * AI bots, no-JS visitors) and is replaced once React mounts.
+ */
+interface Props {
+  title: string;
+  excerpt?: string | null;
+  html: string;
+  categoryName?: string;
+  categoryPath?: string;
+  homeLabel?: string;
+}
+const { title, excerpt, html, categoryName, categoryPath, homeLabel = '首頁' } = Astro.props;
+---
+<div class="ssr-article-shell">
+  <nav aria-label="breadcrumb">
+    <a href="/">{homeLabel}</a>
+    {categoryName && categoryPath && (<> / <a href={categoryPath}>{categoryName}</a></>)}
+  </nav>
+  <article>
+    <h1>{title}</h1>
+    {excerpt && <p class="ssr-excerpt">{excerpt}</p>}
+    <div class="ssr-article" set:html={html} />
+  </article>
+</div>

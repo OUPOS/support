@@ -7,6 +7,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HelpCenterHome from '../components/HelpCenterHome.tsx';
 import CategoryPageWrapper from '../components/CategoryPageWrapper.tsx';
 import ArticlePageWrapper from '../components/ArticlePageWrapper.tsx';
+import ArticleStaticContent from '../components/ArticleStaticContent.astro';
+import { prepareArticle } from '../lib/articleContent';
 
 const projectId = 'local';
 const apiSpecUrl: string | null = null;
@@ -63,7 +65,10 @@ const getCategoryName = (categoryId: string | null) => {
 const formattedDate = article?.created_at
   ? new Date(article.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
   : '';
-const articleExcerpt = (article as any)?.excerpt || article?.title || '';
+// Same server-side preparation as /article/[slug] (blocks split out of props, static HTML, description)
+const prepared = article ? prepareArticle(article as any) : null;
+const articleCategory = article ? categories.find((c: any) => c.id === article.category_id) : null;
+const articleCategoryPath = articleCategory ? `/category/${articleCategory.id}` : undefined;
 const categoryName = article ? getCategoryName(article.category_id) : '';
 const articleUrl = article ? Astro.url.href : '';
 
@@ -72,7 +77,7 @@ const config = configData;
 
 {folder && (
   <BaseLayout 
-    title={`${folder.name} - ${config.portal_name}`}
+    title={`${folder.name}｜${config.portal_name}`}
     description={folder.description || `Browse ${folder.name} articles`}
     config={config}
     projectId={projectId}
@@ -96,8 +101,9 @@ const config = configData;
 
 {category && (
   <BaseLayout
-    title={`${category.name} - ${config.portal_name}`}
-    description={category.description || `Browse ${category.name} articles`}
+    title={`${category.name}｜${config.portal_name}`}
+    description={category.description || `${category.name}：${config.portal_name} 相關文章與教學`}
+    canonicalPath={`/category/${category.id}`}
     config={config}
     projectId={projectId}
     folders={folders}
@@ -119,8 +125,14 @@ const config = configData;
 
 {article && (
   <BaseLayout
-    title={article.title}
-    description={articleExcerpt}
+    title={`${article.title}｜${config.portal_name}`}
+    description={prepared!.description}
+    canonicalPath={`/article/${article.slug}`}
+    breadcrumbs={[
+      { name: config.portal_name, path: '/' },
+      ...(articleCategory ? [{ name: articleCategory.name, path: articleCategoryPath! }] : []),
+      { name: article.title, path: `/article/${article.slug}` },
+    ]}
     config={config}
     projectId={projectId}
     folders={folders}
@@ -137,7 +149,9 @@ const config = configData;
       client:only="react"
       transition:persist="article-page-wrapper"
       config={config}
-      article={article}
+      article={prepared!.safeArticle}
+      articleBlocks={prepared!.blocks}
+      articleHtml={prepared!.html}
       categories={categories}
       allArticles={articles}
       categoryName={categoryName}
@@ -146,6 +160,15 @@ const config = configData;
       projectId={projectId}
       folders={folders}
       apiSpecUrl={apiSpecUrl}
-    />
+    >
+      <ArticleStaticContent
+        slot="fallback"
+        title={article.title}
+        excerpt={(article as any).excerpt}
+        html={prepared!.html}
+        categoryName={articleCategory?.name}
+        categoryPath={articleCategoryPath}
+      />
+    </ArticlePageWrapper>
   </BaseLayout>
 )}

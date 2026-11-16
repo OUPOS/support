@@ -7,6 +7,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HelpCenterHome from '../components/HelpCenterHome.tsx';
 import ArticlePageWrapper from '../components/ArticlePageWrapper.tsx';
 import CategoryPageWrapper from '../components/CategoryPageWrapper.tsx';
+import ArticleStaticContent from '../components/ArticleStaticContent.astro';
+import { prepareArticle } from '../lib/articleContent';
 
 const projectId = 'local';
 const [allArticles, categories, faqs, config, folders] = await Promise.all([
@@ -146,27 +148,19 @@ const formattedDate = article?.created_at
     })
   : '';
 
-const getArticleExcerpt = () => {
-  if (!article) return '';
-  if (article.excerpt) return article.excerpt;
-  
-  const tempDiv = typeof document !== 'undefined' ? document.createElement('div') : null;
-  if (tempDiv) {
-    tempDiv.innerHTML = article.content || '';
-    const textContent = tempDiv.textContent || tempDiv.innerText || '';
-    return textContent.slice(0, 160).trim() + (textContent.length > 160 ? '...' : '');
-  }
-  return article.title;
-};
-
-const articleExcerpt = article ? getArticleExcerpt() : '';
+// Same server-side preparation as /article/[slug] — previously this route passed the
+// raw content (with its embedded <script data-bn> JSON) straight into island props.
+const prepared = article ? prepareArticle(article) : null;
 const categoryName = article ? getCategoryName(article.category_id) : '';
+const articleCategory = article ? categories.find(c => c.id === article.category_id) : null;
+const articleCategoryPath = articleCategory ? `/category/${articleCategory.id}` : undefined;
 const articleUrl = article ? `${Astro.url.origin}${Astro.url.pathname}` : '';
 ---
 
 {pageType === 'folder' && folder && (
   <BaseLayout 
-    title={`${folder.name} - ${helpCenterConfig.portal_name}`}
+    title={`${folder.name}｜${helpCenterConfig.portal_name}`}
+    canonicalPath={`/${folder.slug}`}
     description={folder.description || `Browse ${folder.name} articles`}
     config={helpCenterConfig}
     projectId={projectId}
@@ -190,8 +184,14 @@ const articleUrl = article ? `${Astro.url.origin}${Astro.url.pathname}` : '';
 
 {pageType === 'article' && article && (
   <BaseLayout 
-    title={article.title}
-    description={articleExcerpt}
+    title={`${article.title}｜${helpCenterConfig.portal_name}`}
+    description={prepared!.description}
+    canonicalPath={`/article/${article.slug}`}
+    breadcrumbs={[
+      { name: helpCenterConfig.portal_name, path: '/' },
+      ...(articleCategory ? [{ name: articleCategory.name, path: articleCategoryPath! }] : []),
+      { name: article.title, path: `/article/${article.slug}` },
+    ]}
     config={helpCenterConfig}
     projectId={projectId}
     folders={folders}
@@ -208,7 +208,9 @@ const articleUrl = article ? `${Astro.url.origin}${Astro.url.pathname}` : '';
       client:only="react"
       transition:persist="article-page-wrapper"
       config={helpCenterConfig}
-      article={article}
+      article={prepared!.safeArticle}
+      articleBlocks={prepared!.blocks}
+      articleHtml={prepared!.html}
       categories={categories}
       allArticles={allArticles}
       categoryName={categoryName}
@@ -217,14 +219,24 @@ const articleUrl = article ? `${Astro.url.origin}${Astro.url.pathname}` : '';
       projectId={projectId}
       folders={folders}
       apiSpecUrl={apiSpecUrl}
-    />
+    >
+      <ArticleStaticContent
+        slot="fallback"
+        title={article.title}
+        excerpt={article.excerpt}
+        html={prepared!.html}
+        categoryName={articleCategory?.name}
+        categoryPath={articleCategoryPath}
+      />
+    </ArticlePageWrapper>
   </BaseLayout>
 )}
 
 {pageType === 'category' && category && (
   <BaseLayout 
-    title={`${category.name} - ${helpCenterConfig.portal_name}`}
-    description={category.description || `Browse ${category.name} articles`}
+    title={`${category.name}｜${helpCenterConfig.portal_name}`}
+    description={category.description || `${category.name}：${helpCenterConfig.portal_name} 相關文章與教學`}
+    canonicalPath={`/category/${category.id}`}
     config={helpCenterConfig}
     projectId={projectId}
     folders={folders}

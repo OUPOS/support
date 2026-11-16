@@ -51,6 +51,8 @@ interface ArticlePageWrapperProps {
   config: any;
   article: Article;
   articleBlocks?: any[] | null;
+  /** Server-rendered static HTML of the article, shown if the interactive viewer fails */
+  articleHtml?: string;
   categories: Category[];
   allArticles: Article[];
   categoryName: string;
@@ -66,6 +68,7 @@ export default function ArticlePageWrapper({
   config,
   article,
   articleBlocks,
+  articleHtml,
   categories,
   allArticles,
   categoryName,
@@ -491,7 +494,19 @@ export default function ArticlePageWrapper({
 
             {/* Article Content */}
             <div className="min-h-[400px]">
-              <ErrorBoundary>
+              <ErrorBoundary
+                resetKey={article.id}
+                maxRetries={1}
+                fallback={
+                  articleHtml ? (
+                    <div className="ssr-article" dangerouslySetInnerHTML={{ __html: articleHtml }} />
+                  ) : (
+                    <div className="py-8 text-sm text-muted-foreground">
+                      內容載入失敗，請<a href={typeof window !== 'undefined' ? window.location.href : '#'} className="underline">重新整理頁面</a>。
+                    </div>
+                  )
+                }
+              >
                 <ArticleContentViewer
                   key={article.id}
                   content={article.content}

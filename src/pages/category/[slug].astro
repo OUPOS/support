@@ -42,8 +42,13 @@ const categoryName = category.name;
 ---
 
 <BaseLayout 
-  title={`${categoryName} - ${config.portal_name}`}
-  description={category.description || `Browse ${categoryName} articles`}
+  title={`${categoryName}｜${config.portal_name}`}
+  description={category.description || `${categoryName}：${config.portal_name} 相關文章與教學`}
+  canonicalPath={`/category/${category.id}`}
+  breadcrumbs={[
+    { name: config.portal_name, path: '/' },
+    { name: categoryName, path: `/category/${category.id}` },
+  ]}
   config={config}
   projectId={projectId}
   folders={folders}
