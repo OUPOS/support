@@ -4,14 +4,14 @@ export const MenuAndInventoryArticle = {
   id: 'menu-and-inventory',
   title: '菜單與庫存管理',
   slug: 'menu-and-inventory',
-  excerpt: '如何在OUPOS`中管理菜單與庫存?',
+  excerpt: '如何在OUPOS中管理菜單與庫存?',
   category_id: 'guides',
   is_published: true,
   display_order: 1,
   sidebar_title: null,
   icon: null,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
+  created_at: '2026-11-16T19:30:00Z',
+  updated_at: '2026-11-16T19:30:00Z',
   content: bn([
     h2('新增菜單'),
 

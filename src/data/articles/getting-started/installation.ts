@@ -14,8 +14,8 @@ export const installationArticle = {
   display_order: 2,
   sidebar_title: null as string | null,
   icon: 'hugeicons:download-04' as string | null,
-  created_at: '2024-01-02T00:00:00Z',
-  updated_at: '2024-01-02T00:00:00Z',
+  created_at: '2026-11-16T19:30:00Z',
+  updated_at: '2026-11-16T19:30:00Z',
   content: bn([
   h2('在您的 iPad 下載 OUPOS'),
 

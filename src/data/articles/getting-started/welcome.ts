@@ -8,8 +8,8 @@ export const welcomeArticle = {
   display_order: 1,
   sidebar_title: null as string | null,
   icon: 'hugeicons:star' as string | null,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
+  created_at: '2026-11-16T19:30:00Z',
+  updated_at: '2026-11-16T19:30:00Z',
   content: `
 <h2>歡迎來到 OUPOS</h2>
 <p>感謝您選擇 OUPOS。</p>

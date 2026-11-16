@@ -9,8 +9,8 @@ export const quickStartArticle = {
   display_order: 3,
   sidebar_title: null as string | null,
   icon: 'hugeicons:rocket-01' as string | null,
-  created_at: '2024-01-03T00:00:00Z',
-  updated_at: '2024-01-03T00:00:00Z',
+  created_at: '2026-11-16T19:30:00Z',
+  updated_at: '2026-11-16T19:30:00Z',
   content: bn([
     h2('首次開啟 OUPOS'),
     numbered('填入您的商家名稱，這將會是出單的標題。'),

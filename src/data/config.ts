@@ -36,7 +36,7 @@ export const helpCenterConfig = {
   // SEO
   meta_title: '技術支援中心｜OUPOS',
   meta_description:
-    'OUPOS為開源的Pos系統，提供完整的POS功能，並且支援多種支付方式。立即在Appstore下載',
+    'OUPOS官方技術支援中心。',
   og_image_url: '/og-image.png' as string | null,
   // Production URL used for canonical links, sitemap and robots.txt.
   // Set this to your real domain (e.g. 'https://support.oupos.app') so that

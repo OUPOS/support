@@ -11,8 +11,8 @@ export const deleteAccountArticle = {
   display_order: 2,
   sidebar_title: null,
   icon: null,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
+  created_at: '2026-11-16T19:30:00Z',
+  updated_at: '2026-11-16T19:30:00Z',
   content: bn([
     h2('如何刪除帳號（包括所有資料）'),
     numbered('點擊右上角顯示使用者名稱的位置'),
