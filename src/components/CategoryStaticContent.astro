@@ -1,0 +1,31 @@
+---
+interface Article {
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+}
+
+interface Props {
+  categoryName: string;
+  description?: string | null;
+  articles: Article[];
+}
+
+const { categoryName, description, articles } = Astro.props;
+---
+<section class="ssr-category-content" aria-labelledby="category-title">
+  <h1 id="category-title">{categoryName}</h1>
+  {description && <p>{description}</p>}
+  {articles.length > 0 ? (
+    <ul>
+      {articles.map((article) => (
+        <li>
+          <a href={`/article/${encodeURIComponent(article.slug)}`}>{article.title}</a>
+          {article.excerpt && <p>{article.excerpt}</p>}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p>目前沒有已發布的文章。</p>
+  )}
+</section>
