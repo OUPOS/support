@@ -36,7 +36,7 @@ export const helpCenterConfig = {
   // SEO
   meta_title: '技術支援中心｜OUPOS',
   meta_description:
-    'OUPOS官方技術支援中心。',
+    'OUPOS 官方技術支援中心，提供安裝、快速入門、功能操作、帳號管理與服務條款說明，協助你快速找到所需資訊。',
   og_image_url: '/og-image.png' as string | null,
   // Production URL used for canonical links, sitemap and robots.txt.
   // Set this to your real domain (e.g. 'https://support.oupos.app') so that

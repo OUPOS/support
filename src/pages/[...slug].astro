@@ -8,6 +8,7 @@ import HelpCenterHome from '../components/HelpCenterHome.tsx';
 import ArticlePageWrapper from '../components/ArticlePageWrapper.tsx';
 import CategoryPageWrapper from '../components/CategoryPageWrapper.tsx';
 import ArticleStaticContent from '../components/ArticleStaticContent.astro';
+import CategoryStaticContent from '../components/CategoryStaticContent.astro';
 import { prepareArticle } from '../lib/articleContent';
 
 const projectId = 'local';
@@ -251,6 +252,13 @@ const articleUrl = article ? `${Astro.url.origin}${Astro.url.pathname}` : '';
       allArticles={allArticles}
       projectId={projectId}
       folders={folders}
-    />
+    >
+      <CategoryStaticContent
+        slot="fallback"
+        categoryName={category.name}
+        description={category.description}
+        articles={allArticles.filter(a => a.category_id === category.id)}
+      />
+    </CategoryPageWrapper>
   </BaseLayout>
 )}
