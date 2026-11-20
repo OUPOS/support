@@ -33,7 +33,7 @@ const defaultFolder = folders.find((f: any) => f.is_default) || folders[0] || nu
   ogType="website"
 >
   <HelpCenterHome
-    client:only="react"
+    client:load
     transition:persist="help-center-home"
     config={config}
     articles={articles}
